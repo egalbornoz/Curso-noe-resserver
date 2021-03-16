@@ -1,42 +1,67 @@
 // para que el res funcione
-const { response, request } = require('express');
+const { response, request, json } = require('express');
+const bcrypt = require('bcryptjs');
+const Usuario = require('../models/usuario');
+//const { validarCampos } = require('../middlewares/validar-campos');
+
 
 /*   Se definen las funciones de rutas en el controller  */
-const usuariosGet = (req = request, res = response) => {
+const usuariosGet = async (req = request, res = response) => {
     // Extraer parametros enviados del fronend
+    // const { q, nombre = 'no name', apiKey } = req.query;
+    //limite = cantidad maxima de registros por pagina, desde = inciio de la paginacion
+    const filtro = { estado: true };
+    const { limite = 5, desde = 0 } = req.query;  //Obtener del body el limite de paginación
 
-    const { q, nombre = 'no name', apiKey } = req.query;
+    //Para ejecutar promesas simultanes se usa un arreglo de promesas
+
+    const [total, usuarios] = await Promise.all([
+        Usuario.countDocuments(filtro),
+        Usuario.find(filtro) //dentro den find va la condicion
+            .skip(Number(desde))
+            .limit(Number(limite))
+    ]);
 
     res.json({
-        msg: 'get API - Controller',
-        nombre,
-        q, apiKey
+        total,
+        usuarios
     });
 }
 
-const usuariosPut = (req, res = response) => {
+const usuariosPut = async (req, res = response) => {
     const { id } = req.params; //Id configurado en la ruta router.put('/:id', usuariosPut);
+    const { _id, contraseña, google, correo, ...resto } = req.body; // se excluyen elementos y el resto se actualiza
+    if (contraseña) {
+        const salt = bcrypt.genSaltSync();
+        resto.contraseña = bcrypt.hashSync(contraseña, salt);
+    }
+    const usuario = await Usuario.findByIdAndUpdate(id, resto);
 
-    res.status(400).json({
-        msg: 'Peticion put - Controller',
-        id
-    });
+    res.json(usuario);
 }
 
-const usuariosPost = (req, res = response) => {
+const usuariosPost = async (req, res = response) => {
     // Capturo los datos que vienen del body
-    const { nombre, edad } = req.body;
-    res.status(201).json({
-        msg: 'Peticion post - Controller',
-        nombre,
-        edad
+    const { nombre, correo, contraseña, rol } = req.body;
+    // Se crea la inatancia del Schema Usuarios
+    const usuario = new Usuario({ nombre, correo, contraseña, rol });
+
+    const salt = bcrypt.genSaltSync();
+    usuario.contraseña = bcrypt.hashSync(contraseña, salt);
+    // Guardar en DB
+    await usuario.save();
+    res.json({
+        msg: usuario
     });
 }
 
-const usuariosDelete = (req, res = response) => {
-    res.json({
-        msg: 'Peticion delete - Controller'
-    });
+const usuariosDelete = async (req, res = response) => {
+    const { id } = req.params;
+
+    // fisicamente lo borramos
+    //const usuario = await Usuario.findByIdAndDelete(id);
+    const usuario = await Usuario.findByIdAndUpdate(id, { estado: false });
+    res.json(usuario);
 }
 
 const usuariosPatch = (req, res = response) => {
