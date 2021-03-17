@@ -8,7 +8,8 @@ class Server {
 
         this.app = express();
         this.port = process.env.PORT;
-        this.usuarios = ('/api/usuarios');
+        this.usuarios = '/api/usuarios';
+        this.auth = '/api/auth';
 
         // Conectar a la Base de Datos
         this.conectionDB();
@@ -35,6 +36,7 @@ class Server {
 
     routes() {
         //  Aqui se configuran las rutas a acceder desde  mi controlador
+        this.app.use(this.auth, require('../routes/auth'));
         this.app.use(this.usuarios, require('../routes/usuarios'));
 
     }
