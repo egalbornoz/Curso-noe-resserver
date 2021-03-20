@@ -1,33 +1,30 @@
-// para que el res funcione
+/********************************************************************************
+ * Importaciones necesaria
+ ********************************************************************************/
 const { response, request, json } = require('express');
 const bcrypt = require('bcryptjs');
 const Usuario = require('../models/usuario');
-//const { validarCampos } = require('../middlewares/validar-campos');
-
-
-/*   Se definen las funciones de rutas en el controller  */
+/********************************************************************************
+ * Controlador para obtener los usuarios activos con estado:true y paginados limite=?
+ ********************************************************************************/
 const usuariosGet = async (req = request, res = response) => {
-    // Extraer parametros enviados del fronend
-    // const { q, nombre = 'no name', apiKey } = req.query;
-    //limite = cantidad maxima de registros por pagina, desde = inciio de la paginacion
     const filtro = { estado: true };
     const { limite = 5, desde = 0 } = req.query;  //Obtener del body el limite de paginación
-
-    //Para ejecutar promesas simultanes se usa un arreglo de promesas
-
     const [total, usuarios] = await Promise.all([
+
         Usuario.countDocuments(filtro),
         Usuario.find(filtro) //dentro den find va la condicion
             .skip(Number(desde))
             .limit(Number(limite))
     ]);
-
     res.json({
         total,
         usuarios
     });
 }
-
+/********************************************************************************
+ * Controlador para actualizar los usuarios 
+ ********************************************************************************/
 const usuariosPut = async (req, res = response) => {
     const { id } = req.params; //Id configurado en la ruta router.put('/:id', usuariosPut);
     const { _id, contraseña, google, correo, ...resto } = req.body; // se excluyen elementos y el resto se actualiza
@@ -39,22 +36,23 @@ const usuariosPut = async (req, res = response) => {
 
     res.json(usuario);
 }
-
+/********************************************************************************
+ * Controlador crear los usuarios
+ ********************************************************************************/
 const usuariosPost = async (req, res = response) => {
-    // Capturo los datos que vienen del body
     const { nombre, correo, contraseña, rol } = req.body;
-    // Se crea la inatancia del Schema Usuarios
     const usuario = new Usuario({ nombre, correo, contraseña, rol });
-
     const salt = bcrypt.genSaltSync();
+
     usuario.contraseña = bcrypt.hashSync(contraseña, salt);
-    // Guardar en DB
     await usuario.save();
     res.json({
         msg: usuario
     });
 }
-
+/********************************************************************************
+ * Controlador elminar los usuarios  (Marcar estado=false)
+ ********************************************************************************/
 const usuariosDelete = async (req, res = response) => {
     const { id } = req.params;
 
@@ -63,18 +61,12 @@ const usuariosDelete = async (req, res = response) => {
 
     res.json({ usuario, usuarioAut });
 }
-
-const usuariosPatch = (req, res = response) => {
-    res.json({
-        msg: 'Peticion patch - Controller'
-    });
-}
-
+/********************************************************************************
+ * Exportación de los modulos
+ ********************************************************************************/
 module.exports = {
     usuariosGet,
     usuariosPut,
     usuariosPost,
     usuariosDelete,
-    usuariosPatch
-
 }

@@ -1,5 +1,12 @@
+/********************************************************************************
+ *  Importaciones
+ ********************************************************************************/
 const { response } = require("express");
 const role = require("../models/role");
+
+/********************************************************************************
+ * Middleware valida si el usuario posee rol ADMIN_ROLE
+ ********************************************************************************/
 const esAdminRole = (req, res = response, netx) => {
 
     if (!req.usuario) {
@@ -16,7 +23,9 @@ const esAdminRole = (req, res = response, netx) => {
     }
     netx();
 }
-
+/********************************************************************************
+ *  Middleware valida si el usuario posee rol válido
+ ********************************************************************************/
 const tieneRole = (...roles) => {
 
     return (req, res = response, netx) => {
@@ -33,7 +42,9 @@ const tieneRole = (...roles) => {
         netx();
     }
 }
-
+/********************************************************************************
+ *  Exportaciones
+ ********************************************************************************/
 module.exports = {
     esAdminRole,
     tieneRole,

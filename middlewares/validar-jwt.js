@@ -1,9 +1,14 @@
+/********************************************************************************
+ *  Importaciones
+ ********************************************************************************/
 const { response } = require('express');
 const jwt = require('jsonwebtoken');
 const { estimatedDocumentCount } = require('../models/usuario');
 const Usuario = require('../models/usuario');
 
-
+/********************************************************************************
+ *  Método para validar token recibido del header
+ ********************************************************************************/
 const validarJWT = async (req, res = response, next) => {
     const token = req.header('token');
     // console.log(token);
@@ -33,12 +38,15 @@ const validarJWT = async (req, res = response, next) => {
         }
         next();
     } catch (error) {
-        console.log(error);
+        //console.log(error);
         res.status(401).json({
             msg: 'Token no válido'
         });
     }
 }
+/********************************************************************************
+ *  Exportaciones
+ ********************************************************************************/
 module.exports = {
     validarJWT,
 }

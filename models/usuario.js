@@ -1,3 +1,7 @@
+// **************************************************************
+// * Modelo Usuario
+// **************************************************************
+
 const { Schema, model } = require('mongoose');
 
 const UsuarioSchema = Schema({
@@ -32,12 +36,16 @@ const UsuarioSchema = Schema({
         default: false
     },
 });
-
+//************************************************************************ */
 // Se sobre escribe el metodo para personalizar
 // validaciones(excluir eementos del objeto toJSON devuelto)
+//*********************************************************************** */
 UsuarioSchema.methods.toJSON = function(){
     const {__v, contraseña,_id,...usuario} = this.toObject();
    usuario.uid=_id;
     return  usuario;
 }
+//*********************************************************************** */
+// Exportaciones
+//*********************************************************************** */
 module.exports = model('Usuario',UsuarioSchema);
