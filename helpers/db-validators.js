@@ -1,8 +1,8 @@
 /********************************************************************************
  * Importaciones necesarias
  ********************************************************************************/
-const { Role}  = require('../models/role');
-const {Usuario,Categoria } = require('../models');
+const { Role } = require('../models/role');
+const { Usuario, Categoria, Producto } = require('../models');
 /********************************************************************************
  *Validador personalizado para verificar si existe un rol en la colección Usuario
  ********************************************************************************/
@@ -21,7 +21,6 @@ const emailExiste = async (correo = '') => {
         throw new Error(`El correo:  ${correo} y existe`);
     }
 }
-
 /********************************************************************************
  *Validador personalizado para verificar si existe usuario en la colección usuario
  ********************************************************************************/
@@ -37,15 +36,25 @@ const existeUsuarioPorId = async (id) => {
 const existeCategoriaPorId = async (id) => {
     const existeCat = await Categoria.findById(id);
     if (!existeCat) {
-        throw new Error(`La Categoría no existe `);
+        throw new Error(`La categoría no existe `);
+    }
+}
+/********************************************************************************
+ *Validador personalizado para verificar existe producto en la colección Producto
+ ********************************************************************************/
+const existeProductoPorId = async (id) => {
+    const existePro = await Producto.findById(id);
+    if (!existePro) {
+        throw new Error(`El producto no existe `);
     }
 }
 /********************************************************************************
  *  Exportaciones del archivo
  ********************************************************************************/
 module.exports = {
-    isRolValid,
+    existeCategoriaPorId,
+    existeProductoPorId,
     emailExiste,
     existeUsuarioPorId,
-    existeCategoriaPorId
+    isRolValid,
 }
