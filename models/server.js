@@ -11,6 +11,7 @@ class Server {
         this.port = process.env.PORT;
         this.path = {
             auth: '/api/auth',
+            buscar: '/api/buscar',
             categorias: '/api/categorias',
             productos: '/api/productos',
             usuarios: '/api/usuarios',
@@ -29,7 +30,6 @@ class Server {
 
         //Cors limitar accesos al api
         this.app.use(cors());
-
         // Parseo y lectura del body
         this.app.use(express.json())
         // Directorio Público
@@ -39,6 +39,7 @@ class Server {
     routes() {
         //  Aqui se configuran las rutas a acceder desde  mi controlador
         this.app.use(this.path.auth, require('../routes/auth'));
+        this.app.use(this.path.buscar, require('../routes/buscar'));
         this.app.use(this.path.usuarios, require('../routes/usuarios'));
         this.app.use(this.path.categorias, require('../routes/categorias'));
         this.app.use(this.path.productos, require('../routes/productos'));
