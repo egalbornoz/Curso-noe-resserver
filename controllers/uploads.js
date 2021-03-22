@@ -4,7 +4,7 @@
 const path = require('path');
 const fs = require('fs');
 const { response } = require("express");
-const { subirArchivo } = require("../helpers");
+const { subirArchivo, validarColeccion } = require("../helpers");
 const { Usuario, Producto } = require('../models');
 //Configuación de CLOUDINARY para el almacenamiento de imagenes  
 const cloudinary = require('cloudinary').v2;
@@ -77,30 +77,8 @@ actualizarImagen = async (req, res = response) => {
 actualizarImagenCloudinary = async (req, res = response) => {
 
     const { id, coleccion } = req.params;
-
     let modelo;
-
-    switch (coleccion) {
-        case 'usuarios':
-            modelo = await Usuario.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe un usuario con el id ${id}`
-                })
-            }
-            break;
-        case 'productos':
-            modelo = await Producto.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe un producto con el id ${id}`
-                })
-            }
-            break;
-
-        default:
-            return res.status(500).json({ msg: 'Se me olvidor válidar esto' });
-    }
+    modelo = await validarColeccion(id, coleccion);
     // Limpiar imagenes previas
 
     if (modelo.img) {
@@ -110,51 +88,25 @@ actualizarImagenCloudinary = async (req, res = response) => {
         const [public_id] = nombre.split('.');
         //Eliminar la imagen de claudinary
         cloudinary.uploader.destroy(public_id);
-
     }
-
-
     // //Sube la imagen y guarda en DB
     const { tempFilePath } = req.files.archivo;
     const { secure_url } = await cloudinary.uploader.upload(tempFilePath);
-
     // // const nombre = await subirArchivo(req.files, undefined, coleccion);
     modelo.img = secure_url;
-
     await modelo.save();
-
     res.json(modelo);
 }
 /***************************************************************************
- *  Contolador para servir imagenes a solicitudes http
+ *  Contolador para servir imagenes a solicitudes http desde el servidor
  ****************************************************************************/
 const mostrarImagen = async (req, res = response) => {
 
     const { id, coleccion } = req.params;
-    switch (coleccion) {
-        case 'usuarios':
-            modelo = await Usuario.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe un usuario con el id ${id}`
-                })
-            }
-            break;
-        case 'productos':
-            modelo = await Producto.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe un producto con el id ${id}`
-                })
-            }
-            break;
+    let modelo;
 
-        default:
-            return res.status(500).json({ msg: 'Se me olvidor válidar esto' });
-            break;
-    }
     // Limpiar imagenes previas
-
+    modelo = await validarColeccion(id, coleccion);
     if (modelo.img) {
         //Borrar la imagen delservidor
         const pathImagen = path.join(__dirname, '../uploads', coleccion, modelo.img)
@@ -163,14 +115,29 @@ const mostrarImagen = async (req, res = response) => {
             return res.sendFile(pathImagen);
         }
     }
+
     const pathImagen = path.join(__dirname, '../assets/no-image.jpg');
     res.sendFile(pathImagen);
-    // res.json({
-    //     msg: `falta placeholder`
-    // });
 
 }
+/***************************************************************************
+ *  Contolador para servir imagenes a solicitudes http desde cloudinary
+ ****************************************************************************/
+const mostrarImagenCloudinary = async (req, res = response) => {
+    let modelo;
+    const { id, coleccion } = req.params;
+    // Limpiar imagenes previas
+    modelo = await validarColeccion(id, coleccion);
+    if (modelo.img) {
+        //Borrar la imagen delservidor
+        const { img } = modelo;
+        //Retorna la imagen solicitada
+        return res.send({img});
+    }
+    const pathImagen = path.join(__dirname, '../assets/no-image.jpg');
+    res.sendFile(pathImagen);
 
+}
 /***************************************************************************
  *  Exportaciones
  ****************************************************************************/
@@ -179,4 +146,6 @@ module.exports = {
     actualizarImagen,
     mostrarImagen,
     actualizarImagenCloudinary,
+    mostrarImagenCloudinary,
+
 }

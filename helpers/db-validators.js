@@ -64,6 +64,31 @@ const coleccionesPermitidas = (coleccion = '', colecciones = []) => {
     return true;
 }
 /********************************************************************************
+ *Validador personalizado para validar colecciones registros de la coleccion
+ ********************************************************************************/
+const validarColeccion = async (id, coleccion) => {
+    switch (coleccion) {
+        case 'usuarios':
+            modelo = await Usuario.findById(id);
+            if (!modelo) {
+                return new Error(`No existe un usuario con el id ${id}`);
+            }
+            break;
+        case 'productos':
+            modelo = await Producto.findById(id);
+            if (!modelo) {
+                return new Error(`No existe un producto con el id ${id}`);
+            }
+            break;
+
+        default:
+            return new Error('Falto validar esto');
+            break;
+    }
+    //console.log(modelo)
+     return modelo
+}
+/********************************************************************************
  *  Exportaciones del archivo
  ********************************************************************************/
 module.exports = {
@@ -73,4 +98,5 @@ module.exports = {
     existeUsuarioPorId,
     isRolValid,
     coleccionesPermitidas,
+    validarColeccion,
 }

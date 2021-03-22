@@ -4,7 +4,7 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
 const { validarCampos, validarArchivo } = require('../middlewares');
-const { cargarArchivos, actualizarImagen, mostrarImagen } = require('../controllers/uploads');
+const { cargarArchivos, mostrarImagenCloudinary, } = require('../controllers/uploads');
 const { coleccionesPermitidas } = require('../helpers');
 //Inicialización
 const router = Router();
@@ -28,7 +28,7 @@ router.get('/:coleccion/:id', [
     check('id', 'No es un id de mongo válido').isMongoId(),
     check('coleccion').custom(c => coleccionesPermitidas(c, ['usuarios', 'productos'])),
     validarCampos,
-],mostrarImagen);
+],mostrarImagenCloudinary);
 /******************************************************************
 *  Exportación Rutas - endPoints
  ******************************************************************/
