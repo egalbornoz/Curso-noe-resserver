@@ -29,33 +29,9 @@ cargarArchivos = async (req, res = response) => {
 actualizarImagen = async (req, res = response) => {
 
     const { id, coleccion } = req.params;
-
     let modelo;
-
-    switch (coleccion) {
-        case 'usuarios':
-            modelo = await Usuario.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe un usuario con el id ${id}`
-                })
-            }
-            break;
-        case 'productos':
-            modelo = await Producto.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe un producto con el id ${id}`
-                })
-            }
-            break;
-
-        default:
-            return res.status(500).json({ msg: 'Se me olvidor válidar esto' });
-            break;
-    }
+    modelo = await validarColeccion(id, coleccion);
     // Limpiar imagenes previas
-
     if (modelo.img) {
         //Borrar la imagen delservidor
         const pathImagen = path.join(__dirname, '../uploads', coleccion, modelo.img)
@@ -66,9 +42,7 @@ actualizarImagen = async (req, res = response) => {
     //Sube la imagen y guarda en DB
     const nombre = await subirArchivo(req.files, undefined, coleccion);
     modelo.img = nombre;
-
     await modelo.save();
-
     res.json(modelo);
 }
 /***************************************************************************
@@ -132,7 +106,7 @@ const mostrarImagenCloudinary = async (req, res = response) => {
         //Borrar la imagen delservidor
         const { img } = modelo;
         //Retorna la imagen solicitada
-        return res.send({img});
+        return res.send({ img });
     }
     const pathImagen = path.join(__dirname, '../assets/no-image.jpg');
     res.sendFile(pathImagen);
